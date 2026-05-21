@@ -1,0 +1,242 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html>\
+<head>\
+<meta charset="UTF-8" />\
+<title>H-47 ARG // Unified Build</title>\
+<style>\
+body\{margin:0;background:black;color:#cfcfcf;font-family:monospace;overflow:hidden;transition:filter 0.2s;\}\
+.screen\{display:none;padding:20px;\}\
+.active\{display:block;\}\
+.glitch\{animation:gl 2s infinite;\}\
+@keyframes gl\{0%\{transform:translate(0)\}20%\{transform:translate(-1px,1px)\}40%\{transform:translate(1px,-1px)\}60%\{transform:translate(0)\}100%\{transform:translate(0)\}\}\
+.flash\{animation:flash 6s infinite;\}\
+@keyframes flash\{0%\{background:black\}50%\{background:#020202\}51%\{background:black\}100%\{background:black\}\}\
+input,button\{background:#111;color:#fff;border:1px solid #333;padding:10px;margin-top:10px;\}\
+#console\{position:fixed;bottom:0;left:0;width:100%;height:40%;background:#000;color:#0f0;display:none;padding:10px;overflow:auto;font-size:12px;\}\
+</style>\
+</head>\
+<body class="flash">\
+\
+<div id="console"></div>\
+\
+<!-- LOGIN -->\
+<div id="login" class="screen active">\
+  <h2 class="glitch">BILLY FOUNDATION NODE ACCESS</h2>\
+  <p>ENTER AUTHORIZATION KEY</p>\
+  <input id="pw" type="password" placeholder="ACCESS KEY" />\
+  <button onclick="login()">AUTHENTICATE</button>\
+</div>\
+\
+<!-- SCAN -->\
+<div id="scan" class="screen">\
+  <h2 class="glitch">BFRD MONITORING // TRACE SCAN</h2>\
+  <div id="log"></div>\
+</div>\
+\
+<!-- TRACE -->\
+<div id="trace" class="screen">\
+  <h2 class="glitch">MATCH FOUND: H-47 RESIDUAL SIGNAL</h2>\
+  <div id="traceLog"></div>\
+</div>\
+\
+<!-- CONTACT -->\
+<div id="contact" class="screen">\
+  <h2>CONNECTION ESTABLISHED</h2>\
+  <div id="contactLog"></div>\
+</div>\
+\
+<!-- ENDINGS -->\
+<div id="ending" class="screen">\
+  <h2 id="endingTitle"></h2>\
+  <p id="endingText"></p>\
+</div>\
+\
+<!-- RECOVERY -->\
+<div id="recover" class="screen">\
+  <h2>ACCESS LOCKED</h2>\
+  <p>ENTER KEY FRAGMENT</p>\
+  <input id="key" />\
+  <button onclick="checkKey()">ENTER</button>\
+</div>\
+\
+<script>\
+// --------------------\
+// PERSISTENT MEMORY\
+// --------------------\
+let data = JSON.parse(localStorage.getItem("H47_MEMORY")||"\{\}");\
+data.visits = (data.visits||0)+1;\
+data.infection = data.infection||0;\
+localStorage.setItem("H47_MEMORY",JSON.stringify(data));\
+\
+let startTime = Date.now();\
+let screenTimes = \{\};\
+\
+function save()\{localStorage.setItem("H47_MEMORY",JSON.stringify(data));\}\
+\
+// --------------------\
+// CONSOLE SYSTEM\
+// --------------------\
+let consoleOpen=false;\
+let cmd="";\
+\
+window.addEventListener("keydown",e=>\{\
+  if(e.key=="`")\{\
+    consoleOpen=!consoleOpen;\
+    document.getElementById("console").style.display=consoleOpen?"block":"none";\
+  \}\
+  if(consoleOpen)\{\
+    if(e.key=="Enter") runCmd(cmd),cmd="";\
+    else cmd+=e.key;\
+  \}\
+\});\
+\
+function runCmd(c)\{\
+  let con=document.getElementById("console");\
+  con.innerHTML+="<br>> "+c;\
+\
+  if(c=="help") con.innerHTML+="<br>commands: status, purge, echo";\
+  if(c=="status") con.innerHTML+="<br>infection: "+data.infection+"% visits:"+data.visits;\
+  if(c.startsWith("echo")) con.innerHTML+="<br>"+c.slice(5);\
+  if(c=="purge") con.innerHTML+="<br>denied. residue persists.";\
+\}\
+\
+// --------------------\
+// NAVIGATION\
+// --------------------\
+function show(id)\{\
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));\
+  document.getElementById(id).classList.add('active');\
+  screenTimes[id]=Date.now();\
+\}\
+\
+function goto(id)\{show(id);\}\
+\
+// --------------------\
+// LOGIN\
+// --------------------\
+function login()\{\
+  const pw=document.getElementById('pw').value;\
+  if(pw=="H47-ACCESS")\{\
+    data.infection+=5;\
+    save();\
+    goto('scan');\
+    startScan();\
+  \} else \{\
+    flash();\
+  \}\
+\}\
+\
+function flash()\{document.body.style.filter="blur(1px)";setTimeout(()=>document.body.style.filter="",300);\}\
+\
+// --------------------\
+// SCAN (ADAPTIVE)\
+// --------------------\
+let i=0;\
+let scanLines=["initializing scan...","scanning network residue...","checking anomalies...","H-47 not found","false positives"];\
+\
+function startScan()\{\
+let log=document.getElementById("log");\
+let t=setInterval(()=>\{\
+if(!document.getElementById("scan").classList.contains("active")) return clearInterval(t);\
+\
+let speed=Date.now()-startTime;\
+\
+if(i<scanLines.length)\{\
+log.innerHTML+=scanLines[i]+((speed<5000)?" :)":"")+"<br>";\
+i++;\
+\} else log.innerHTML+="instability detected<br>";\
+\
+if(Math.random()<0.2) flash();\
+\
+if(i>8)\{goto('trace');startTrace();\}\
+\},900);\
+\}\
+\
+// --------------------\
+// TRACE (ADAPTIVE H-47)\
+// --------------------\
+let ti=0;\
+function startTrace()\{\
+let out=document.getElementById("traceLog");\
+let msgs=["signal unstable","humor residue","why are you still scanning","system mismatch :) "];\
+\
+let t=setInterval(()=>\{\
+if(!document.getElementById("trace").classList.contains("active")) return clearInterval(t);\
+\
+let reactionSpeed=Date.now()-startTime;\
+\
+if(ti<msgs.length)\{\
+out.innerHTML+=msgs[ti]+"<br>";\
+ti++;\
+\} else out.innerHTML+=(reactionSpeed<7000?"you are fast...":"you are slow...")+"<br>";\
+\
+if(ti>6)\{goto('contact');startContact();\}\
+\},1000);\
+\}\
+\
+// --------------------\
+// CONTACT\
+// --------------------\
+let ci=0;\
+function startContact()\{\
+let out=document.getElementById("contactLog");\
+let msgs=["you keep looking","that\'92s not how observation works","i was already here","why are you still scanning me"];\
+\
+let t=setInterval(()=>\{\
+if(!document.getElementById("contact").classList.contains("active")) return clearInterval(t);\
+\
+if(ci<msgs.length)\{out.innerHTML+=msgs[ci]+"<br>";ci++;\}\
+else end();\
+\},900);\
+\}\
+\
+// --------------------\
+// ENDINGS\
+// --------------------\
+function end()\{\
+let time=Date.now()-startTime;\
+let title="";\
+let text="";\
+\
+if(time<12000)\{\
+title="FAST ENDING";\
+text="H-47 classifies you as OBSERVER NODE";\
+data.infection+=20;\
+\}\
+else if(time>20000)\{\
+title="SLOW ENDING";\
+text="residue fully integrated";\
+data.infection+=40;\
+\}\
+else\{\
+title="BALANCED ENDING";\
+text="partial awareness achieved";\
+data.infection+=30;\
+\}\
+\
+save();\
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));\
+document.getElementById('ending').classList.add('active');\
+document.getElementById('endingTitle').innerText=title;\
+document.getElementById('endingText').innerText=text;\
+\}\
+\
+// --------------------\
+// RECOVERY\
+// --------------------\
+function checkKey()\{\
+let v=document.getElementById('key').value.toLowerCase();\
+if(v=="h47") location.reload();\
+else flash();\
+\}\
+</script>\
+</body>\
+</html>\
+}
