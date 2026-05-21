@@ -1,18 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>H-47 ARG // Unified Build</title>
+<title>H-47 // TRACE NODE</title>
 <style>
-body{margin:0;background:black;color:#cfcfcf;font-family:monospace;overflow:hidden;transition:filter 0.2s;}
-.screen{display:none;padding:20px;}
-.active{display:block;}
-.glitch{animation:gl 2s infinite;}
-@keyframes gl{0%{transform:translate(0)}20%{transform:translate(-1px,1px)}40%{transform:translate(1px,-1px)}60%{transform:translate(0)}100%{transform:translate(0)}}
-.flash{animation:flash 6s infinite;}
-@keyframes flash{0%{background:black}50%{background:#020202}51%{background:black}100%{background:black}}
-input,button{background:#111;color:#fff;border:1px solid #333;padding:10px;margin-top:10px;}
-#console{position:fixed;bottom:0;left:0;width:100%;height:40%;background:#000;color:#0f0;display:none;padding:10px;overflow:auto;font-size:12px;}
+body{
+margin:0;
+background:#000;
+color:#d0d0d0;
+font-family:monospace;
+overflow:hidden;
+}
+.screen{
+display:none;
+padding:20px;
+}
+.active{
+display:block;
+}
+.glitch{
+animation:gl 1.8s infinite;
+}
+@keyframes gl{
+0%{transform:translate(0)}
+20%{transform:translate(-1px,1px)}
+40%{transform:translate(1px,-1px)}
+60%{transform:translate(0)}
+100%{transform:translate(0)}
+}
+.flash{
+animation:flash 5s infinite;
+}
+@keyframes flash{
+0%{background:#000}
+50%{background:#050505}
+100%{background:#000}
+}
+input,button{
+background:#111;
+color:#fff;
+border:1px solid #333;
+padding:10px;
+margin-top:10px;
+}
+#console{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+height:35%;
+background:#000;
+color:#0f0;
+display:none;
+padding:10px;
+overflow:auto;
+font-size:12px;
+}
 </style>
 </head>
 <body class="flash">
@@ -21,214 +64,208 @@ input,button{background:#111;color:#fff;border:1px solid #333;padding:10px;margi
 
 <!-- LOGIN -->
 <div id="login" class="screen active">
-  <h2 class="glitch">BILLY FOUNDATION NODE ACCESS</h2>
-  <p>ENTER AUTHORIZATION KEY</p>
-  <input id="pw" type="password" placeholder="ACCESS KEY" />
-  <button onclick="login()">AUTHENTICATE</button>
+<h2 class="glitch">BILLY FOUNDATION ACCESS NODE</h2>
+<p>ENTER KEY</p>
+<input id="pw" placeholder="ACCESS KEY" />
+<button onclick="login()">AUTHENTICATE</button>
 </div>
 
 <!-- SCAN -->
 <div id="scan" class="screen">
-  <h2 class="glitch">BFRD MONITORING // TRACE SCAN</h2>
-  <div id="log"></div>
+<h2 class="glitch">BFRD TRACE SCAN</h2>
+<div id="scanlog"></div>
 </div>
 
 <!-- TRACE -->
 <div id="trace" class="screen">
-  <h2 class="glitch">MATCH FOUND: H-47 RESIDUAL SIGNAL</h2>
-  <div id="traceLog"></div>
+<h2 class="glitch">RESIDUAL SIGNAL FOUND</h2>
+<div id="tracelog"></div>
 </div>
 
 <!-- CONTACT -->
 <div id="contact" class="screen">
-  <h2>CONNECTION ESTABLISHED</h2>
-  <div id="contactLog"></div>
+<h2 class="glitch">UNAUTHORIZED PRESENCE DETECTED</h2>
+<div id="contactlog"></div>
 </div>
 
-<!-- ENDINGS -->
+<!-- ENDING -->
 <div id="ending" class="screen">
-  <h2 id="endingTitle"></h2>
-  <p id="endingText"></p>
-</div>
-
-<!-- RECOVERY -->
-<div id="recover" class="screen">
-  <h2>ACCESS LOCKED</h2>
-  <p>ENTER KEY FRAGMENT</p>
-  <input id="key" />
-  <button onclick="checkKey()">ENTER</button>
+<h2 id="title"></h2>
+<p id="text"></p>
 </div>
 
 <script>
-// --------------------
-// PERSISTENT MEMORY
-// --------------------
-let data = JSON.parse(localStorage.getItem("H47_MEMORY")||"{}");
-data.visits = (data.visits||0)+1;
-data.infection = data.infection||0;
-localStorage.setItem("H47_MEMORY",JSON.stringify(data));
 
-let startTime = Date.now();
-let screenTimes = {};
+// ---------------- MEMORY ----------------
+let mem = JSON.parse(localStorage.getItem("H47")) || {visits:0,infection:0};
+mem.visits++;
+localStorage.setItem("H47",JSON.stringify(mem));
 
-function save(){localStorage.setItem("H47_MEMORY",JSON.stringify(data));}
+let start = Date.now();
+let state = "login";
 
-// --------------------
-// CONSOLE SYSTEM
-// --------------------
-let consoleOpen=false;
-let cmd="";
-
-window.addEventListener("keydown",e=>{
-  if(e.key=="`"){
-    consoleOpen=!consoleOpen;
-    document.getElementById("console").style.display=consoleOpen?"block":"none";
-  }
-  if(consoleOpen){
-    if(e.key=="Enter") runCmd(cmd),cmd="";
-    else cmd+=e.key;
-  }
-});
-
-function runCmd(c){
-  let con=document.getElementById("console");
-  con.innerHTML+="<br>> "+c;
-
-  if(c=="help") con.innerHTML+="<br>commands: status, purge, echo";
-  if(c=="status") con.innerHTML+="<br>infection: "+data.infection+"% visits:"+data.visits;
-  if(c.startsWith("echo")) con.innerHTML+="<br>"+c.slice(5);
-  if(c=="purge") con.innerHTML+="<br>denied. residue persists.";
-}
-
-// --------------------
-// NAVIGATION
-// --------------------
 function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  screenTimes[id]=Date.now();
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+state=id;
 }
 
-function goto(id){show(id);}
-
-// --------------------
-// LOGIN
-// --------------------
+// ---------------- LOGIN ----------------
 function login(){
-  const pw=document.getElementById('pw').value;
-  if(pw=="H47-ACCESS"){
-    data.infection+=5;
-    save();
-    goto('scan');
-    startScan();
-  } else {
-    flash();
-  }
+let pw=document.getElementById("pw").value;
+if(pw==="H47-ACCESS"){
+mem.infection+=5;
+localStorage.setItem("H47",JSON.stringify(mem));
+show("scan");
+startScan();
+}else{
+flash();
+}
 }
 
-function flash(){document.body.style.filter="blur(1px)";setTimeout(()=>document.body.style.filter="",300);}
+function flash(){
+document.body.style.filter="blur(1px)";
+setTimeout(()=>document.body.style.filter="",200);
+}
 
-// --------------------
-// SCAN (ADAPTIVE)
-// --------------------
-let i=0;
-let scanLines=["initializing scan...","scanning network residue...","checking anomalies...","H-47 not found","false positives"];
+// ---------------- SCAN ----------------
+let scanLines=[
+"initializing scan...",
+"scanning network residue...",
+"checking anomalies...",
+"H-47 not found",
+"false positives"
+];
 
 function startScan(){
-let log=document.getElementById("log");
-let t=setInterval(()=>{
-if(!document.getElementById("scan").classList.contains("active")) return clearInterval(t);
+let log=document.getElementById("scanlog");
+let i=0;
 
-let speed=Date.now()-startTime;
+let t=setInterval(()=>{
+if(state!=="scan") return clearInterval(t);
 
 if(i<scanLines.length){
-log.innerHTML+=scanLines[i]+((speed<5000)?" :)":"")+"<br>";
-i++;
-} else log.innerHTML+="instability detected<br>";
-
-if(Math.random()<0.2) flash();
-
-if(i>8){goto('trace');startTrace();}
-},900);
+log.innerHTML+=scanLines[i]+"<br>";
+}else{
+log.innerHTML+="instability detected<br>";
 }
 
-// --------------------
-// TRACE (ADAPTIVE H-47)
-// --------------------
+i++;
+
+if(i===scanLines.length+3){
+clearInterval(t);
+show("trace");
+startTrace();
+}
+
+},800);
+}
+
+// ---------------- TRACE ----------------
 let ti=0;
 function startTrace(){
-let out=document.getElementById("traceLog");
-let msgs=["signal unstable","humor residue","why are you still scanning","system mismatch :) "];
+let out=document.getElementById("tracelog");
+let msgs=[
+"signal unstable",
+"behavioral residue detected",
+"you are not alone here",
+"system mismatch :)"
+];
 
 let t=setInterval(()=>{
-if(!document.getElementById("trace").classList.contains("active")) return clearInterval(t);
-
-let reactionSpeed=Date.now()-startTime;
+if(state!=="trace") return clearInterval(t);
 
 if(ti<msgs.length){
 out.innerHTML+=msgs[ti]+"<br>";
 ti++;
-} else out.innerHTML+=(reactionSpeed<7000?"you are fast...":"you are slow...")+"<br>";
-
-if(ti>6){goto('contact');startContact();}
-},1000);
+}else{
+out.innerHTML+="it noticed you first<br>";
 }
 
-// --------------------
-// CONTACT
-// --------------------
-let ci=0;
-function startContact(){
-let out=document.getElementById("contactLog");
-let msgs=["you keep looking","that’s not how observation works","i was already here","why are you still scanning me"];
+if(ti===msgs.length+2){
+clearInterval(t);
+show("contact");
+startContact();
+}
 
-let t=setInterval(()=>{
-if(!document.getElementById("contact").classList.contains("active")) return clearInterval(t);
-
-if(ci<msgs.length){out.innerHTML+=msgs[ci]+"<br>";ci++;}
-else end();
 },900);
 }
 
-// --------------------
-// ENDINGS
-// --------------------
+// ---------------- CONTACT ----------------
+let ci=0;
+function startContact(){
+let out=document.getElementById("contactlog");
+let msgs=[
+"you keep scanning",
+"that is incorrect behavior",
+"i was already here",
+"why are you still looking"
+];
+
+let t=setInterval(()=>{
+if(state!=="contact") return clearInterval(t);
+
+if(ci<msgs.length){
+out.innerHTML+=msgs[ci]+"<br>";
+ci++;
+}else{
+end();
+}
+
+},900);
+}
+
+// ---------------- ENDINGS ----------------
 function end(){
-let time=Date.now()-startTime;
-let title="";
-let text="";
+let time=Date.now()-start;
+let t="";
+let x="";
 
-if(time<12000){
-title="FAST ENDING";
-text="H-47 classifies you as OBSERVER NODE";
-data.infection+=20;
-}
-else if(time>20000){
-title="SLOW ENDING";
-text="residue fully integrated";
-data.infection+=40;
-}
-else{
-title="BALANCED ENDING";
-text="partial awareness achieved";
-data.infection+=30;
+if(time<10000){
+t="FAST NODE";
+x="H-47 classifies you as observer.";
+mem.infection+=25;
+}else if(time>20000){
+t="SLOW NODE";
+x="residue fully integrated.";
+mem.infection+=40;
+}else{
+t="UNSTABLE NODE";
+x="partial awareness achieved.";
+mem.infection+=30;
 }
 
-save();
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-document.getElementById('ending').classList.add('active');
-document.getElementById('endingTitle').innerText=title;
-document.getElementById('endingText').innerText=text;
+localStorage.setItem("H47",JSON.stringify(mem));
+show("ending");
+document.getElementById("title").innerText=t;
+document.getElementById("text").innerText=x;
 }
 
-// --------------------
-// RECOVERY
-// --------------------
-function checkKey(){
-let v=document.getElementById('key').value.toLowerCase();
-if(v=="h47") location.reload();
-else flash();
+// ---------------- CONSOLE ----------------
+let open=false;
+let cmd="";
+
+window.addEventListener("keydown",e=>{
+if(e.key=="`"){
+open=!open;
+document.getElementById("console").style.display=open?"block":"none";
 }
+if(open){
+if(e.key=="Enter"){run(cmd);cmd="";}
+else cmd+=e.key;
+}
+});
+
+function run(c){
+let con=document.getElementById("console");
+con.innerHTML+="<br>> "+c;
+if(c=="help")con.innerHTML+="<br>status / echo / purge";
+if(c=="status")con.innerHTML+="<br>infection:"+mem.infection+" visits:"+mem.visits;
+if(c.startsWith("echo"))con.innerHTML+="<br>"+c.slice(5);
+if(c=="purge")con.innerHTML+="<br>denied.";
+}
+
 </script>
+
 </body>
 </html>
